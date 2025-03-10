@@ -1,55 +1,50 @@
-import * as FileSystem from "expo-file-system";
-import * as SQLite from "expo-sqlite";
-import { Asset } from "expo-asset";
-import React, { Suspense, useEffect, useState } from "react";
-import { View } from "react-native";
+import * as FileSystem from 'expo-file-system';
+import * as SQLite from 'expo-sqlite';
+import { Asset } from 'expo-asset';
+import React, { Suspense, useEffect, useState } from 'react';
+import { View } from 'react-native';
 
-//interface DatabaseProviderProps {
-//    children: React.ReactNode;
-//}
-
-async function loadDatabase() {
+async function LoadDatabase() {
     const name = "activities.db";
-    const dbPath = `${FileSystem.documentDirectory}SQLite/${name}`; // Fixed typo from "SQlite" to "SQLite"
+    const dbPath = `${FileSystem.documentDirectory}SQLite/${name}`;
+    const fileInfo = await FileSystem.getInfoAsync(dbPath);
 
-    const fileInfo = await FileSystem.getInfoAsync(dbPath); // ✅ Fixed syntax: changed `{}` to `()`
-
-    if (!fileInfo.exists) { // ✅ Fixed: Use `!fileInfo.exists` instead of `if (fileInfo.exists)`
-        // Create db
+    if (!fileInfo.exists) {
+        // Create DB
         const dbAsset = require("@/assets/" + name);
         const dbUri = Asset.fromModule(dbAsset).uri;
 
-        await FileSystem.makeDirectoryAsync(
-            `${FileSystem.documentDirectory}SQLite`,
-            { intermediates: true }
-        );
+        // Create directory
+        await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}SQLite`, { intermediates: true });
 
-        await FileSystem.downloadAsync(dbUri, dbPath); // ✅ Fixed incorrect second parameter (should be `dbPath`)
+        // Copy file into directory
+        await FileSystem.downloadAsync(dbUri, dbPath);
     }
 }
 
-function useDb() {
+function useDB() {
     const [loaded, setLoaded] = useState(false);
+
     useEffect(() => {
-        loadDatabase().then(() => setLoaded(true));
+        LoadDatabase().then(() => setLoaded(true));
     }, []);
 
     return { loaded };
 }
 
 export function DatabaseProvider({ children }: {children: React.ReactNode}) {
-    const { loaded } = useDb();
+    const { loaded } = useDB();
 
     if (!loaded) {
-      return null;
+        return null;
     }
 
     return (
         <Suspense fallback={<View />}>
-          <SQLite.SQLiteProvider useSuspense databaseName="activities.db">
-            {children}
-          </SQLite.SQLiteProvider>
+            {/* Ensure this is wrapping your components needing SQLite */}
+            <SQLite.SQLiteProvider databaseName="activities.db">
+                {children}
+            </SQLite.SQLiteProvider>
         </Suspense>
-      );
-    }
-    export default DatabaseProvider;
+    );
+}

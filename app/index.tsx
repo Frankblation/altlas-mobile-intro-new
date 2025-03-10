@@ -1,8 +1,8 @@
 import { Alert, Pressable, Text, View } from "react-native";
 import { styles } from "@/lib/Constants";
 import { Link, router } from "expo-router";
-import DatabaseProvider from "@/components/DatabaseProvider";
-import { useActivities } from "@/components/useActivities";
+import { DatabaseProvider } from "@/components/DatabaseProvider";
+import { useActivities } from "@/hooks/useActivities";
 export default function Index() {
   const { activities } = useActivities();
 
